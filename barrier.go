@@ -52,6 +52,6 @@ func (br *Barrier) CheckRateLimit(ctx context.Context, req ReqCheckLimit) bool {
 	return true
 }
 
-func NewBarrier(client *redis.Client) *Barrier {
-	return &Barrier{client: client}
+func NewBarrier(client *redis.Client, expired time.Duration, limit int) *Barrier {
+    return &Barrier{client: client, expired: expired, limit: limit}
 }
