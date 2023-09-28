@@ -9,9 +9,9 @@ import (
 )
 
 type Barrier struct {
-	client  *redis.Client
-	expired time.Duration
-	limit   int
+	Client  *redis.Client
+	Expired time.Duration
+	Limit   int
 }
 
 type ReqCheckLimit struct {
@@ -24,14 +24,14 @@ func (br *Barrier) CheckRateLimit(ctx context.Context, req ReqCheckLimit) bool {
 	key := fmt.Sprintf("rate_limit:%s:%s:%s",
 		req.ClientID, req.UserID, req.URL)
 
-	exists, err := br.client.Exists(ctx, key).Result()
+	exists, err := br.Client.Exists(ctx, key).Result()
 	if err != nil {
 		// handle error if needed
 		return false
 	}
 
 	if exists == 0 {
-		_, err := br.client.Set(ctx, key, 1, br.expired*time.Minute).Result()
+		_, err := br.Client.Set(ctx, key, 1, br.Expired*time.Minute).Result()
 		if err != nil {
 			// handle error if needed
 			return false
@@ -39,13 +39,13 @@ func (br *Barrier) CheckRateLimit(ctx context.Context, req ReqCheckLimit) bool {
 		return true
 	}
 
-	count, err := br.client.Incr(ctx, key).Result()
+	count, err := br.Client.Incr(ctx, key).Result()
 	if err != nil {
 		// handle error if needed
 		return false
 	}
 
-	if count > int64(br.limit) {
+	if count > int64(br.Limit) {
 		return false
 	}
 
@@ -53,5 +53,5 @@ func (br *Barrier) CheckRateLimit(ctx context.Context, req ReqCheckLimit) bool {
 }
 
 func NewBarrier(client *redis.Client, expired time.Duration, limit int) *Barrier {
-    return &Barrier{client: client, expired: expired, limit: limit}
+	return &Barrier{Client: client, Expired: expired, Limit: limit}
 }
